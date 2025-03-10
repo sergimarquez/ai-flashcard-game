@@ -133,30 +133,30 @@ export default function Home() {
   };
 
   return (
-    <div className="p-10 max-w-screen-sm mx-auto bg-gradient-to-r from-teal-400 to-blue-500 text-white rounded-lg shadow-lg">
-      <h1 className="text-3xl font-bold mb-6 text-center">AI-Powered Flashcard Game</h1>
+    <div className="p-10 max-w-screen-md mx-auto min-h-screen flex flex-col justify-center items-center bg-gray-100">
+      <h1 className="text-4xl font-bold mb-6 text-center text-gray-800">AI-Powered Flashcard Game</h1>
 
       {/* Instructions */}
       {!gameActive && (
-        <div className="mb-6 text-center">
-          <h2 className="text-2xl font-semibold">Welcome to the Flashcard Game!</h2>
-          <p>Select your topics, start the game, and answer questions to level up!</p>
-          <p className="mt-2">You can use tokens to remove incorrect answers. Try to get to the highest level possible!</p>
-          <p className="mt-4 text-lg font-semibold">Good luck! 🎮</p>
+        <div className="mb-6 text-center text-gray-700">
+          <h2 className="text-2xl font-semibold">How to Play</h2>
+          <p>Select your topics and start the game. Answer coding questions to level up!</p>
+          <p className="mt-2">You can use tokens to remove wrong answers. Keep progressing to earn more lives!</p>
+          <p className="mt-4 text-lg font-semibold">Good luck and have fun! 🎮</p>
         </div>
       )}
 
       {gameActive ? (
         <>
-          <div className="mb-6 flex justify-between items-center">
-            <p className="font-semibold text-lg">Level: {level}</p>
-            <p className="font-semibold text-lg">Lives: {lives} ❤️</p>
-            <p className="font-semibold text-lg">Tokens: {tokens} 🎟️</p>
+          <div className="mb-6 flex justify-between items-center w-full max-w-xs">
+            <p className="font-semibold text-lg text-gray-800">Level: {level}</p>
+            <p className="font-semibold text-lg text-gray-800">Lives: {lives} ❤️</p>
+            <p className="font-semibold text-lg text-gray-800">Tokens: {tokens} 🎟️</p>
           </div>
 
-          <p className="text-center mb-4">Question {questionNumber}/3</p>
+          <p className="text-center mb-4 text-gray-700">Question {questionNumber}/3</p>
 
-          <div className="mt-6 flex justify-between">
+          <div className="mt-6 flex justify-between w-full max-w-xs">
             <button
               onClick={() => setGameActive(false)}
               className="w-full sm:w-auto p-3 bg-red-500 text-white rounded text-lg font-semibold hover:bg-red-600 transition"
@@ -166,10 +166,10 @@ export default function Home() {
           </div>
 
           {/* Question and Options */}
-          <div className="mt-8 p-4 border rounded bg-gray-100 shadow">
+          <div className="mt-8 p-4 border rounded bg-white shadow-md w-full max-w-xs">
             {questionData ? (
               <>
-                <p className="text-lg font-semibold">{questionData.question}</p>
+                <p className="text-lg font-semibold text-gray-800">{questionData.question}</p>
                 {questionData?.options && questionData.options.length >= 2 ? (
                   questionData.options.map((option, index) => (
                     <button
@@ -201,9 +201,9 @@ export default function Home() {
       ) : (
         <>
           {/* Topic Selection UI */}
-          <div className="mt-4">
-            <p className="font-semibold">Select Topics:</p>
-            <div className="flex flex-wrap gap-2">
+          <div className="mt-4 text-center">
+            <p className="font-semibold text-gray-800">Select Topics:</p>
+            <div className="flex flex-wrap gap-2 justify-center">
               {allTopics.map(topic => (
                 <button
                   key={topic}
