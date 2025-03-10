@@ -17,26 +17,40 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     const prompt = `
-    Generate a **NEW** frontend coding multiple-choice question for Level ${level} (difficulty 0-10).
-    The question must be related to one of these topics: ${topics.join(', ')}.
+    Generate a **NEW** multiple-choice frontend coding question for a Level ${level} developer.
+    Ensure **no repetition** and choose a diverse subtopic from: ${topics.join(', ')}.
     
-    **Rules:**
+    **Subtopics (Choose One Randomly Per Question)**:
+    - **HTML:** Forms, Accessibility, Meta Tags, Tables, Semantic Elements, Multimedia, ARIA Roles, Web Components, HTML5 APIs, Input Types.
+    - **CSS:** Flexbox, Grid, Animations, Specificity, Pseudo-classes, Units (rem, vh, %), Transitions, Variables, Media Queries, Clipping & Masking.
+    - **JavaScript:** Closures, Promises, Event Delegation, \`this\` keyword, Prototypes, Scope, Async/Await, Modules, ES6 Features, Hoisting.
+    - **React:** Hooks, Context API, Render Optimization, Virtual DOM, Lifecycle Methods, Error Boundaries, Suspense, Server Components, Memoization.
+    
+    **Difficulty Rules Per Level**:
+    - **Level 1-2:** Simple syntax, fundamental concepts (easy recall).
+    - **Level 3-4:** Common real-world coding tasks.
+    - **Level 5-6:** Debugging, problem-solving, applying concepts.
+    - **Level 7-8:** Advanced optimizations, best practices, security considerations.
+    - **Level 9-10:** Expert-level browser internals, performance tuning, deep JavaScript mechanics.
+    
+    **Rules**:
+    - The question must be **completely different from: ${previousQuestions.join(', ')}**
     - The question must have **exactly 4 answer choices**, with **1 correct answer**.
     - The format must be **valid JSON**, structured as:
     {
-      "question": "What does CSS stand for?",
+      "question": "What is the default flex-direction in CSS Flexbox?",
       "options": [
-        "Cascading Style Sheets",
-        "Creative Style Sheets",
-        "Computer Style Sheets",
-        "Colorful Style Sheets"
+        "row",
+        "column",
+        "row-reverse",
+        "column-reverse"
       ],
-      "correctAnswer": "Cascading Style Sheets",
-      "explanation": "CSS stands for Cascading Style Sheets, which is used to style web pages."
+      "correctAnswer": "row",
+      "explanation": "By default, Flexbox arranges elements in a row."
     }
     
-    **Generate unique, varied, and engaging questions. No duplicates.**
-    `;    
+    **Ensure uniqueness, variety, and logical progression of difficulty. No duplicates.**
+    `;     
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',

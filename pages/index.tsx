@@ -55,17 +55,17 @@ export default function Home() {
   }
 
   const startGame = () => {
-    setLevel(0) // ✅ Reset level to 0
-    setCorrectAnswers(0)
-    setTokens(0) // ✅ Reset tokens
-    setQuestionNumber(1)
-    setPreviousQuestions([]) // ✅ Reset past questions
-    setGameActive(true)
-    Cookies.set('level', '0')
-    Cookies.set('tokens', '0')
-    generateQuestion()
-  }  
-
+    setLevel(1);
+    setCorrectAnswers(0);
+    setTokens(0);
+    setQuestionNumber(1);
+    setPreviousQuestions([]);
+    setGameActive(true);
+    Cookies.set('level', '1');
+    Cookies.set('tokens', '0');
+    generateQuestion();
+  };
+  
   const handleAnswer = (selectedOption) => {
     setSelectedOption(selectedOption);
   
