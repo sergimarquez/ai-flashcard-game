@@ -21,15 +21,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     The question must be related to one of these topics: ${topics.join(', ')}.
     
     **Rules:**
-    - The question must be **completely new** (different from: ${previousQuestions.join(', ')}).
-    - The question must have exactly **4 answer choices**, with **1 correct answer**.
-    - The format must be valid JSON, structured as:
+    - The question must have **exactly 4 answer choices**, with **1 correct answer**.
+    - The format must be **valid JSON**, structured as:
     {
       "question": "What does CSS stand for?",
-      "options": ["Cascading Style Sheets", "Creative Style Sheets", "Computer Style Sheets", "Colorful Style Sheets"],
-      "correctAnswer": "Cascading Style Sheets"
+      "options": [
+        "Cascading Style Sheets",
+        "Creative Style Sheets",
+        "Computer Style Sheets",
+        "Colorful Style Sheets"
+      ],
+      "correctAnswer": "Cascading Style Sheets",
+      "explanation": "CSS stands for Cascading Style Sheets, which is used to style web pages."
     }
-    `
+    
+    **Generate unique, varied, and engaging questions. No duplicates.**
+    `;    
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
