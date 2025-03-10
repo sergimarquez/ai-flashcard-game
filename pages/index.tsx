@@ -10,13 +10,17 @@ export default function Home() {
   const [correctAnswers, setCorrectAnswers] = useState(0)
   const [highestLevel, setHighestLevel] = useState(Number(Cookies.get('highestLevel')) || 0)
   const [gameActive, setGameActive] = useState(false)
-  const [selectedOption, setSelectedOption] = useState(null) // ✅ Added selectedOption state
+  const [selectedOption, setSelectedOption] = useState(null)
   const [previousQuestions, setPreviousQuestions] = useState<string[]>([])
+  const [tokens, setTokens] = useState(Number(Cookies.get('tokens')) || 0)
+
 
   useEffect(() => {
     Cookies.set('level', String(level))
     Cookies.set('highestLevel', String(highestLevel))
-  }, [level, highestLevel])
+    Cookies.set('tokens', String(tokens))
+  }, [level, highestLevel, tokens])
+  
 
   const allTopics = ['HTML', 'CSS', 'JavaScript', 'React']
 
@@ -51,24 +55,30 @@ export default function Home() {
   }
 
   const startGame = () => {
+    setLevel(0) // ✅ Reset level to 0
     setCorrectAnswers(0)
+    setTokens(0) // ✅ Reset tokens
     setQuestionNumber(1)
-    setPreviousQuestions([]) // Reset past questions on new game
+    setPreviousQuestions([]) // ✅ Reset past questions
     setGameActive(true)
+    Cookies.set('level', '0')
+    Cookies.set('tokens', '0')
     generateQuestion()
-  }
+  }  
 
   const handleAnswer = (selectedOption) => {
-    setSelectedOption(selectedOption) // ✅ Store user choice
-
+    setSelectedOption(selectedOption)
+  
     if (selectedOption === questionData.correctAnswer) {
       alert('✅ Correct!')
-
+  
       if (questionNumber === 3) {
         alert(`🎉 Level ${level} Completed! Moving to Level ${level + 1}`)
         setLevel(level + 1)
+        setTokens(tokens + 1)
         setQuestionNumber(1)
         if (level + 1 > highestLevel) setHighestLevel(level + 1)
+        generateQuestion()
       } else {
         setQuestionNumber(questionNumber + 1)
         generateQuestion()
@@ -78,7 +88,30 @@ export default function Home() {
       setGameActive(false)
     }
   }
-
+  
+  const useTokenToRemoveWrongAnswer = () => {
+    if (tokens > 0 && questionData && questionData.options.length > 2) {
+      const wrongAnswers = questionData.options.filter(option => option !== questionData.correctAnswer);
+  
+      if (wrongAnswers.length > 0) {
+        const answerToRemove = wrongAnswers[Math.floor(Math.random() * wrongAnswers.length)];
+  
+        // ✅ Correctly update the state to remove the selected wrong answer
+        setQuestionData(prevData => {
+          if (!prevData) return null; // Prevent errors if questionData is null
+          return {
+            ...prevData,
+            options: prevData.options.filter(option => option !== answerToRemove),
+          };
+        });
+  
+        setTokens(prevTokens => prevTokens - 1); // ✅ Deduct one token
+      }
+    } else {
+      alert("❌ No tokens left or can't remove more answers!");
+    }
+  };  
+  
   return (
     <div className="p-10">
       <h1 className="text-3xl font-bold">AI-Powered Flashcard Game</h1>
@@ -87,13 +120,25 @@ export default function Home() {
         <>
           <p className="font-semibold text-lg">Level: {level}</p>
           <p>Question {questionNumber}/3</p>
+          {/* Token Display */}
+          <div className="mt-4">
+            <p className="font-semibold text-lg">Tokens: {tokens} 🎟️</p>
+            <button
+              className="mt-2 p-2 bg-yellow-500 text-black rounded"
+              onClick={useTokenToRemoveWrongAnswer}
+              disabled={tokens === 0}
+            >
+              🔥 Use Token (Remove Wrong Answer)
+            </button>
+          </div>
+
 
           {questionData && (
             <div className="mt-4 p-4 border rounded bg-gray-100 shadow">
               <p className="text-lg font-semibold">{questionData.question}</p>
 
               {/* Ensure options exist before mapping */}
-              {questionData?.options && questionData.options.length === 4 ? (
+              {questionData?.options && questionData.options.length >= 2 ? (
                 questionData.options.map((option, index) => (
                   <button
                     key={index}

@@ -17,20 +17,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     const prompt = `
-    Generate a **NEW** frontend multiple-choice question for Level ${level} (difficulty 0-10).
+    Generate a **NEW** frontend coding multiple-choice question for Level ${level} (difficulty 0-10).
     The question must be related to one of these topics: ${topics.join(', ')}.
-
+    
     **Rules:**
-    - The question must be **completely new** (different from: ${previousQuestions?.join(', ') || 'None'}).
-    - The question must have **exactly 4 answer choices**, with **1 correct answer**.
+    - The question must be **completely new** (different from: ${previousQuestions.join(', ')}).
+    - The question must have exactly **4 answer choices**, with **1 correct answer**.
     - The format must be valid JSON, structured as:
     {
       "question": "What does CSS stand for?",
       "options": ["Cascading Style Sheets", "Creative Style Sheets", "Computer Style Sheets", "Colorful Style Sheets"],
       "correctAnswer": "Cascading Style Sheets"
     }
-    
-    **DO NOT add any extra text, explanations, or comments—return ONLY valid JSON.**
     `
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -43,7 +41,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         model: 'gpt-3.5-turbo',
         messages: [{ role: 'system', content: prompt }],
         max_tokens: 400,
-        temperature: 0.9
+        temperature: 0.9 // 🔥 Increases randomness to ensure variety
       }),
     })
 
@@ -52,21 +50,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       throw new Error(data.error?.message || 'Failed to generate question')
     }
 
-    // Ensure response is valid JSON
+    // Parse OpenAI response
     let questionData
     try {
       questionData = JSON.parse(data.choices?.[0]?.message?.content)
-
-      // Validate the structure
-      if (
-        !questionData.question ||
-        !Array.isArray(questionData.options) ||
-        questionData.options.length !== 4 ||
-        !questionData.correctAnswer ||
-        !questionData.options.includes(questionData.correctAnswer)
-      ) {
-        throw new Error('Invalid AI response structure')
-      }
     } catch (error) {
       throw new Error('Invalid JSON format returned from AI')
     }
