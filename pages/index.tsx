@@ -1,5 +1,20 @@
 import { useState, useEffect } from 'react'
 import Cookies from 'js-cookie'
+import { FaGithub } from 'react-icons/fa'
+
+// Modal component
+const Modal = ({ message, onClose }) => (
+  <div className="fixed inset-0 flex justify-center items-center bg-gray-800 bg-opacity-50 z-50">
+    <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+      <p className="text-lg font-semibold">{message}</p>
+      <div className="mt-4 flex justify-end">
+        <button onClick={onClose} className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+);
 
 export default function Home() {
   const [selectedTopics, setSelectedTopics] = useState<string[]>(['HTML'])
@@ -14,6 +29,7 @@ export default function Home() {
   const [previousQuestions, setPreviousQuestions] = useState<string[]>([])
   const [tokens, setTokens] = useState(Number(Cookies.get('tokens')) || 0)
   const [lives, setLives] = useState(0); // New state for tracking lives
+  const [modalMessage, setModalMessage] = useState(null); // State for modal message
 
   useEffect(() => {
     Cookies.set('level', String(level))
@@ -133,40 +149,49 @@ export default function Home() {
   };
 
   return (
-    <div className="p-10 max-w-screen-md mx-auto min-h-screen flex flex-col justify-center items-center bg-gray-100">
-      <h1 className="text-4xl font-bold mb-6 text-center text-gray-800">AI-Powered Flashcard Game</h1>
+    <div className="p-10 bg-gray-800 text-gray-100 min-h-screen flex flex-col justify-center items-center">
+      <h1 className="text-4xl font-bold mb-6 text-center text-blue-400">CodeQuest: Frontend Challenges</h1>
+
+      {/* Modal */}
+      {modalMessage && <Modal message={modalMessage} onClose={() => setModalMessage(null)} />}
 
       {/* Instructions */}
       {!gameActive && (
-        <div className="mb-6 text-center text-gray-700">
+        <div className="mb-6 text-center text-gray-300">
           <h2 className="text-2xl font-semibold">How to Play</h2>
           <p>Select your topics and start the game. Answer coding questions to level up!</p>
-          <p className="mt-2">You can use tokens to remove wrong answers. Keep progressing to earn more lives!</p>
+          <p className="mt-2">Earn a **token** after completing each level and an **extra life** every 3 levels.</p>
           <p className="mt-4 text-lg font-semibold">Good luck and have fun! 🎮</p>
         </div>
       )}
 
       {gameActive ? (
         <>
-          <div className="mb-6 flex justify-between items-center w-full max-w-xs">
-            <p className="font-semibold text-lg text-gray-800">Level: {level}</p>
-            <p className="font-semibold text-lg text-gray-800">Lives: {lives} ❤️</p>
-            <p className="font-semibold text-lg text-gray-800">Tokens: {tokens} 🎟️</p>
+          <div className="mb-6 flex justify-between items-center w-full max-w-lg">
+            <div className="bg-gray-700 p-3 rounded-md text-center">
+              <p className="text-lg text-yellow-300">Level: {level}</p>
+              <p className="text-lg text-yellow-300">Lives: {lives} ❤️</p>
+              <p className="text-lg text-yellow-300">Tokens: {tokens} 🎟️</p>
+            </div>
           </div>
 
-          <p className="text-center mb-4 text-gray-700">Question {questionNumber}/3</p>
+          <p className="text-center mb-4 text-gray-300">Question {questionNumber}/3</p>
 
-          <div className="mt-6 flex justify-between w-full max-w-xs">
+          <div className="mt-4 w-full bg-gray-600 rounded-lg h-2">
+            <div className="bg-blue-500 h-full" style={{ width: `${(questionNumber / 3) * 100}%` }} />
+          </div>
+
+          <div className="mt-6 flex justify-between w-full max-w-lg">
             <button
               onClick={() => setGameActive(false)}
-              className="w-full sm:w-auto p-3 bg-red-500 text-white rounded text-lg font-semibold hover:bg-red-600 transition"
+              className="w-full sm:w-auto p-3 bg-gray-600 text-white rounded text-lg font-semibold hover:bg-gray-700 transition"
             >
-              🚪 Quit Game
+              Quit Game
             </button>
           </div>
 
           {/* Question and Options */}
-          <div className="mt-8 p-4 border rounded bg-white shadow-md w-full max-w-xs">
+          <div className="mt-8 p-6 border rounded bg-white shadow-md w-full max-w-lg">
             {questionData ? (
               <>
                 <p className="text-lg font-semibold text-gray-800">{questionData.question}</p>
@@ -194,7 +219,9 @@ export default function Home() {
                 )}
               </>
             ) : (
-              <p>Loading question...</p>
+              <div className="flex justify-center items-center h-20">
+                <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500"></div>
+              </div>
             )}
           </div>
         </>
@@ -227,11 +254,16 @@ export default function Home() {
               onClick={startGame}
               disabled={selectedTopics.length === 0}
             >
-              🎮 Start Game
+              Start Game
             </button>
           </div>
         </>
       )}
+
+      {/* Footer */}
+      <footer className="absolute bottom-0 w-full py-4 bg-gray-800 text-white text-center">
+        <p>Created by <a href="https://sergimarquez.com" className="text-blue-400">SergiMarquez</a> | <a href="https://github.com/sergimarquez" target="_blank" rel="noopener noreferrer"><FaGithub className="inline text-lg" /></a></p>
+      </footer>
     </div>
   )
 }
