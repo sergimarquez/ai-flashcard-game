@@ -2,13 +2,13 @@ import { useState, useEffect } from 'react'
 import Cookies from 'js-cookie'
 import { FaGithub } from 'react-icons/fa'
 
-// Modal component
+// Modal component - fixed centering
 const Modal = ({ message, onClose }) => (
-  <div className="fixed inset-0 flex justify-center items-center bg-gray-800 bg-opacity-50 z-50">
-    <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
-      <p className="text-lg font-semibold">{message}</p>
+  <div className="fixed inset-0 flex justify-center items-center bg-gray-800 bg-opacity-70 z-50">
+    <div className="bg-gray-900 p-6 rounded-lg shadow-lg max-w-md w-full">
+      <p className="text-lg font-semibold text-yellow-300">{message}</p>
       <div className="mt-4 flex justify-end">
-        <button onClick={onClose} className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
+        <button onClick={onClose} className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
           Close
         </button>
       </div>
@@ -28,7 +28,7 @@ export default function Home() {
   const [selectedOption, setSelectedOption] = useState(null)
   const [previousQuestions, setPreviousQuestions] = useState<string[]>([])
   const [tokens, setTokens] = useState(Number(Cookies.get('tokens')) || 0)
-  const [lives, setLives] = useState(0); // New state for tracking lives
+  const [lives, setLives] = useState(1); // Start with 1 life
   const [modalMessage, setModalMessage] = useState(null); // State for modal message
 
   useEffect(() => {
@@ -74,12 +74,12 @@ export default function Home() {
     setCorrectAnswers(0);
     setTokens(0);
     setQuestionNumber(1);
-    setLives(0); // Reset lives
+    setLives(1); // Start with 1 life
     setPreviousQuestions([]);
     setGameActive(true);
     Cookies.set('level', '1');
     Cookies.set('tokens', '0');
-    Cookies.set('lives', '0');
+    Cookies.set('lives', '1');
     generateQuestion();
   };
 
@@ -149,8 +149,8 @@ export default function Home() {
   };
 
   return (
-    <div className="p-10 bg-gray-800 text-gray-100 min-h-screen flex flex-col justify-center items-center">
-      <h1 className="text-4xl font-bold mb-6 text-center text-blue-400">CodeQuest: Frontend Challenges</h1>
+    <div className="p-10 bg-gray-900 text-gray-100 min-h-screen flex flex-col justify-center items-center">
+      <h1 className="text-4xl font-bold mb-6 text-center text-yellow-400">⚔️ CodeQuest: Frontend Challenges 🏆</h1>
 
       {/* Modal */}
       {modalMessage && <Modal message={modalMessage} onClose={() => setModalMessage(null)} />}
@@ -158,36 +158,37 @@ export default function Home() {
       {/* Instructions */}
       {!gameActive && (
         <div className="mb-6 text-center text-gray-300">
-          <h2 className="text-2xl font-semibold">How to Play</h2>
-          <p>Select your topics and start the game. Answer coding questions to level up!</p>
-          <p className="mt-2">Earn a **token** after completing each level and an **extra life** every 3 levels.</p>
-          <p className="mt-4 text-lg font-semibold">Good luck and have fun! 🎮</p>
+          <h2 className="text-2xl font-semibold text-white">How to Play</h2>
+          <p className="text-white">Select your topics and start the game. Answer coding questions to level up!</p>
+          <p className="mt-2 text-white">Earn a **token** after completing each level and an **extra life** every 3 levels.</p>
+          <p className="mt-4 text-lg font-semibold text-white">Good luck and have fun! 🎮</p>
         </div>
       )}
 
       {gameActive ? (
         <>
           <div className="mb-6 flex justify-between items-center w-full max-w-lg">
-            <div className="bg-gray-700 p-3 rounded-md text-center">
+            <div className="bg-blue-800 p-3 rounded-md text-center w-full">
               <p className="text-lg text-yellow-300">Level: {level}</p>
               <p className="text-lg text-yellow-300">Lives: {lives} ❤️</p>
               <p className="text-lg text-yellow-300">Tokens: {tokens} 🎟️</p>
             </div>
           </div>
 
-          <p className="text-center mb-4 text-gray-300">Question {questionNumber}/3</p>
+          <p className="text-center mb-4 text-gray-300 text-white">Question {questionNumber}/3</p>
 
           <div className="mt-4 w-full bg-gray-600 rounded-lg h-2">
             <div className="bg-blue-500 h-full" style={{ width: `${(questionNumber / 3) * 100}%` }} />
           </div>
 
-          <div className="mt-6 flex justify-between w-full max-w-lg">
-            <button
+          {/* Quit Button (small, at the bottom) */}
+          <div className="mt-6 text-center">
+            <a
               onClick={() => setGameActive(false)}
-              className="w-full sm:w-auto p-3 bg-gray-600 text-white rounded text-lg font-semibold hover:bg-gray-700 transition"
+              className="text-gray-400 hover:text-white text-sm cursor-pointer"
             >
               Quit Game
-            </button>
+            </a>
           </div>
 
           {/* Question and Options */}
@@ -229,7 +230,7 @@ export default function Home() {
         <>
           {/* Topic Selection UI */}
           <div className="mt-4 text-center">
-            <p className="font-semibold text-gray-800">Select Topics:</p>
+            <p className="font-semibold text-gray-800 text-white">Select Topics:</p>
             <div className="flex flex-wrap gap-2 justify-center">
               {allTopics.map(topic => (
                 <button
