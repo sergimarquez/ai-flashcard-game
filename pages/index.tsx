@@ -1,14 +1,22 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import Cookies from 'js-cookie'
 
 export default function Home() {
   const [selectedTopics, setSelectedTopics] = useState<string[]>(['HTML'])
   const [questionData, setQuestionData] = useState(null)
   const [loading, setLoading] = useState(false)
-  const [level, setLevel] = useState(1)
+  const [level, setLevel] = useState(Number(Cookies.get('level')) || 0)
+  const [questionNumber, setQuestionNumber] = useState(1)
   const [correctAnswers, setCorrectAnswers] = useState(0)
-  const [passCount, setPassCount] = useState(0)
-  const [highestLevel, setHighestLevel] = useState(1)
-  const [showAnswer, setShowAnswer] = useState(false)
+  const [highestLevel, setHighestLevel] = useState(Number(Cookies.get('highestLevel')) || 0)
+  const [gameActive, setGameActive] = useState(false)
+  const [selectedOption, setSelectedOption] = useState(null) // ✅ Added selectedOption state
+  const [previousQuestions, setPreviousQuestions] = useState<string[]>([])
+
+  useEffect(() => {
+    Cookies.set('level', String(level))
+    Cookies.set('highestLevel', String(highestLevel))
+  }, [level, highestLevel])
 
   const allTopics = ['HTML', 'CSS', 'JavaScript', 'React']
 
@@ -19,133 +27,130 @@ export default function Home() {
   }
 
   const generateQuestion = async () => {
-    if (correctAnswers >= 5) {
-      alert(`Level ${level} completed! Moving to Level ${level + 1}`)
-      setLevel(level + 1)
-      setCorrectAnswers(0)
-      setPassCount(passCount + 1) // Earn a Pass Question comodin
+    setLoading(true)
+    setQuestionData(null)
+    setSelectedOption(null) // ✅ Reset selected option
 
-      if (level + 1 > highestLevel) {
-        setHighestLevel(level + 1)
-      }
+    try {
+      const response = await fetch('/api/generateQuestion', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ topics: selectedTopics, level, previousQuestions }),
+      })
+
+      const data = await response.json()
+      if (data.error) throw new Error(data.error)
+
+      setQuestionData(data)
+      setPreviousQuestions(prev => [...prev, data.question]) // Store past questions
+    } catch (error) {
+      alert(`Error: ${error.message}`)
     }
 
-    setShowAnswer(false)
-    setQuestionData(null)
-    setLoading(true)
-
-    const response = await fetch('/api/generateQuestion', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ topics: selectedTopics }),
-    })
-
-    const data = await response.json()
-    setQuestionData(data)
     setLoading(false)
   }
 
-  const handleAnswer = (correct: boolean) => {
-    if (correct) {
-      setCorrectAnswers(correctAnswers + 1)
-    } else {
-      alert(`Wrong answer! Try again.`)
-      setCorrectAnswers(0) // Restart progress on wrong answer
-    }
+  const startGame = () => {
+    setCorrectAnswers(0)
+    setQuestionNumber(1)
+    setPreviousQuestions([]) // Reset past questions on new game
+    setGameActive(true)
     generateQuestion()
+  }
+
+  const handleAnswer = (selectedOption) => {
+    setSelectedOption(selectedOption) // ✅ Store user choice
+
+    if (selectedOption === questionData.correctAnswer) {
+      alert('✅ Correct!')
+
+      if (questionNumber === 3) {
+        alert(`🎉 Level ${level} Completed! Moving to Level ${level + 1}`)
+        setLevel(level + 1)
+        setQuestionNumber(1)
+        if (level + 1 > highestLevel) setHighestLevel(level + 1)
+      } else {
+        setQuestionNumber(questionNumber + 1)
+        generateQuestion()
+      }
+    } else {
+      alert(`❌ Wrong! The correct answer was: ${questionData.correctAnswer}`)
+      setGameActive(false)
+    }
   }
 
   return (
     <div className="p-10">
       <h1 className="text-3xl font-bold">AI-Powered Flashcard Game</h1>
 
-      {/* Level & Progress Display */}
-      <div className="mt-4">
-        <p className="font-semibold text-lg">Level: {level}</p>
-        <p className="text-green-500">Highest Level Achieved: {highestLevel}</p>
-        <p className="text-gray-500">Pass Question Comodins: {passCount}</p>
-      </div>
+      {gameActive ? (
+        <>
+          <p className="font-semibold text-lg">Level: {level}</p>
+          <p>Question {questionNumber}/3</p>
 
-      {/* Topic Selection */}
-      <div className="mt-4">
-        <p className="font-semibold">Select Topics:</p>
-        <div className="flex flex-wrap gap-2">
-          {allTopics.map(topic => (
-            <button
-              key={topic}
-              className={`p-2 rounded border ${
-                selectedTopics.includes(topic) ? 'bg-blue-500 text-white border-blue-700' : 'bg-gray-200 border-gray-400'
-              }`}
-              onClick={() => toggleTopic(topic)}
-            >
-              {selectedTopics.includes(topic) ? `✅ ${topic}` : topic}
-            </button>
-          ))}
-        </div>
-      </div>
+          {questionData && (
+            <div className="mt-4 p-4 border rounded bg-gray-100 shadow">
+              <p className="text-lg font-semibold">{questionData.question}</p>
 
-      {/* Selected Topics Display */}
-      <div className="mt-4">
-        <p className="font-semibold">Selected Topics:</p>
-        <p className="text-blue-600">
-          {selectedTopics.length > 0 ? selectedTopics.join(', ') : 'None'}
-        </p>
-      </div>
-
-      {/* Generate Question Button */}
-      <button
-        className="mt-4 p-2 bg-green-500 text-white rounded"
-        onClick={generateQuestion}
-        disabled={loading || selectedTopics.length === 0}
-      >
-        {loading ? 'Generating...' : 'Generate Question'}
-      </button>
-
-      {/* Question Display */}
-      {questionData && (
-        <div className="mt-4 p-4 border rounded">
-          <p className="text-lg font-semibold">{questionData.question}</p>
-
-          {/* Show Answer */}
-          {showAnswer ? (
-            <>
-              <p className="text-gray-500">Answer: {questionData.answer}</p>
-              <p className="text-sm text-blue-400">{questionData.funFact}</p>
-
-              {/* Answer Buttons */}
-              <div className="mt-2">
-                <button
-                  className="p-2 bg-green-500 text-white rounded"
-                  onClick={() => handleAnswer(true)}
-                >
-                  I Got It Right ✅
-                </button>
-                <button
-                  className="ml-4 p-2 bg-red-500 text-white rounded"
-                  onClick={() => handleAnswer(false)}
-                >
-                  I Got It Wrong ❌
-                </button>
-              </div>
-            </>
-          ) : (
-            <button
-              className="mt-2 p-2 bg-blue-500 text-white rounded"
-              onClick={() => setShowAnswer(true)}
-            >
-              Show Answer
-            </button>
+              {/* Ensure options exist before mapping */}
+              {questionData?.options && questionData.options.length === 4 ? (
+                questionData.options.map((option, index) => (
+                  <button
+                    key={index}
+                    className={`block w-full p-3 mt-2 rounded transition ${
+                      selectedOption
+                        ? option === questionData.correctAnswer
+                          ? 'bg-green-500 text-white' // ✅ Correct answer is green
+                          : option === selectedOption
+                          ? 'bg-red-500 text-white' // ❌ Wrong answer is red
+                          : 'bg-gray-200'
+                        : 'bg-gray-200 hover:bg-blue-500 hover:text-white'
+                    }`}
+                    onClick={() => handleAnswer(option)}
+                    disabled={selectedOption !== null} // ✅ Disable buttons after selecting
+                  >
+                    {option}
+                  </button>
+                ))
+              ) : (
+                <p className="text-red-500">⚠️ Error: Question options are missing!</p>
+              )}
+            </div>
           )}
+        </>
+      ) : (
+        <>
+          {/* Topic Selection UI */}
+          <div className="mt-4">
+            <p className="font-semibold">Select Topics:</p>
+            <div className="flex flex-wrap gap-2">
+              {allTopics.map(topic => (
+                <button
+                  key={topic}
+                  className={`p-2 rounded border transition ${
+                    selectedTopics.includes(topic) 
+                      ? 'bg-blue-500 text-white border-blue-700' 
+                      : 'bg-gray-200 border-gray-400'
+                  }`}
+                  onClick={() => toggleTopic(topic)}
+                >
+                  {selectedTopics.includes(topic) ? `✅ ${topic}` : topic}
+                </button>
+              ))}
+            </div>
+          </div>
 
-          {/* Pass Question Button */}
-          <button
-            className="mt-2 ml-4 p-2 bg-yellow-500 text-black rounded"
-            onClick={generateQuestion}
-            disabled={passCount <= 0}
-          >
-            Pass Question ({passCount} left)
-          </button>
-        </div>
+          {/* Start Game Button (Always Visible) */}
+          <div className="mt-6">
+            <button
+              className="w-full p-3 bg-green-500 text-white rounded text-lg font-semibold hover:bg-green-600 transition"
+              onClick={startGame}
+              disabled={selectedTopics.length === 0} // Disable if no topics are selected
+            >
+              🎮 Start Game
+            </button>
+          </div>
+        </>
       )}
     </div>
   )
