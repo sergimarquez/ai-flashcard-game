@@ -13,14 +13,13 @@ export default function Home() {
   const [selectedOption, setSelectedOption] = useState(null)
   const [previousQuestions, setPreviousQuestions] = useState<string[]>([])
   const [tokens, setTokens] = useState(Number(Cookies.get('tokens')) || 0)
-
+  const [lives, setLives] = useState(0); // New state for tracking lives
 
   useEffect(() => {
     Cookies.set('level', String(level))
     Cookies.set('highestLevel', String(highestLevel))
     Cookies.set('tokens', String(tokens))
   }, [level, highestLevel, tokens])
-  
 
   const allTopics = ['HTML', 'CSS', 'JavaScript', 'React']
 
@@ -55,28 +54,37 @@ export default function Home() {
   }
 
   const startGame = () => {
-    setLevel(1);
+    setLevel(1); // Start at level 1
     setCorrectAnswers(0);
     setTokens(0);
     setQuestionNumber(1);
+    setLives(0); // Reset lives
     setPreviousQuestions([]);
     setGameActive(true);
     Cookies.set('level', '1');
     Cookies.set('tokens', '0');
+    Cookies.set('lives', '0');
     generateQuestion();
   };
-  
+
   const handleAnswer = (selectedOption) => {
     setSelectedOption(selectedOption);
-  
+
     if (selectedOption === questionData.correctAnswer) {
       alert('✅ Correct!');
-  
+
       if (questionNumber === 3) {
         alert(`🎉 Level ${level} Completed! Moving to Level ${level + 1}`);
         setLevel(level + 1);
         setTokens(tokens + 1);
         setQuestionNumber(1);
+
+        // Grant an extra life every 3 levels completed
+        if (level % 3 === 0) {
+          setLives(lives + 1);
+          alert('🎉 You earned an extra life!');
+        }
+
         if (level + 1 > highestLevel) setHighestLevel(level + 1);
         generateQuestion();
       } else {
@@ -84,27 +92,30 @@ export default function Home() {
         generateQuestion();
       }
     } else {
-      alert(`❌ Wrong! The correct answer was: ${questionData.correctAnswer}
+      alert(`❌ Wrong! The correct answer was: ${questionData.correctAnswer}`);
       
-  💡 Explanation: ${questionData.explanation}`);
-  
-      setTimeout(() => {
-        alert("🔄 Try Again! Restarting this level.");
-        setQuestionNumber(1);
-        setSelectedOption(null);
-        generateQuestion();
-      }, 1000);
+      // If player still has lives left, allow them to continue
+      if (lives > 0) {
+        alert(`You have ${lives} lives left. Try again!`);
+        setLives(lives - 1); // Deduct one life
+        setSelectedOption(null); // Reset selected option
+        setQuestionNumber(1); // Restart current level
+        generateQuestion(); // Generate a new question
+      } else {
+        alert("❌ No lives left! Restarting the game.");
+        setGameActive(false);
+        setLevel(0); // Reset to level 0 on failure
+      }
     }
   };
-  
-  
+
   const useTokenToRemoveWrongAnswer = () => {
     if (tokens > 0 && questionData && questionData.options.length > 2) {
       const wrongAnswers = questionData.options.filter(option => option !== questionData.correctAnswer);
-  
+
       if (wrongAnswers.length > 0) {
         const answerToRemove = wrongAnswers[Math.floor(Math.random() * wrongAnswers.length)];
-  
+
         // ✅ Correctly update the state to remove the selected wrong answer
         setQuestionData(prevData => {
           if (!prevData) return null; // Prevent errors if questionData is null
@@ -113,64 +124,79 @@ export default function Home() {
             options: prevData.options.filter(option => option !== answerToRemove),
           };
         });
-  
+
         setTokens(prevTokens => prevTokens - 1); // ✅ Deduct one token
       }
     } else {
       alert("❌ No tokens left or can't remove more answers!");
     }
-  };  
-  
+  };
+
   return (
-    <div className="p-10">
-      <h1 className="text-3xl font-bold">AI-Powered Flashcard Game</h1>
+    <div className="p-10 max-w-screen-sm mx-auto bg-gradient-to-r from-teal-400 to-blue-500 text-white rounded-lg shadow-lg">
+      <h1 className="text-3xl font-bold mb-6 text-center">AI-Powered Flashcard Game</h1>
+
+      {/* Instructions */}
+      {!gameActive && (
+        <div className="mb-6 text-center">
+          <h2 className="text-2xl font-semibold">Welcome to the Flashcard Game!</h2>
+          <p>Select your topics, start the game, and answer questions to level up!</p>
+          <p className="mt-2">You can use tokens to remove incorrect answers. Try to get to the highest level possible!</p>
+          <p className="mt-4 text-lg font-semibold">Good luck! 🎮</p>
+        </div>
+      )}
 
       {gameActive ? (
         <>
-          <p className="font-semibold text-lg">Level: {level}</p>
-          <p>Question {questionNumber}/3</p>
-          {/* Token Display */}
-          <div className="mt-4">
+          <div className="mb-6 flex justify-between items-center">
+            <p className="font-semibold text-lg">Level: {level}</p>
+            <p className="font-semibold text-lg">Lives: {lives} ❤️</p>
             <p className="font-semibold text-lg">Tokens: {tokens} 🎟️</p>
+          </div>
+
+          <p className="text-center mb-4">Question {questionNumber}/3</p>
+
+          <div className="mt-6 flex justify-between">
             <button
-              className="mt-2 p-2 bg-yellow-500 text-black rounded"
-              onClick={useTokenToRemoveWrongAnswer}
-              disabled={tokens === 0}
+              onClick={() => setGameActive(false)}
+              className="w-full sm:w-auto p-3 bg-red-500 text-white rounded text-lg font-semibold hover:bg-red-600 transition"
             >
-              🔥 Use Token (Remove Wrong Answer)
+              🚪 Quit Game
             </button>
           </div>
 
-
-          {questionData && (
-            <div className="mt-4 p-4 border rounded bg-gray-100 shadow">
-              <p className="text-lg font-semibold">{questionData.question}</p>
-
-              {/* Ensure options exist before mapping */}
-              {questionData?.options && questionData.options.length >= 2 ? (
-                questionData.options.map((option, index) => (
-                  <button
-                    key={index}
-                    className={`block w-full p-3 mt-2 rounded transition ${
-                      selectedOption
-                        ? option === questionData.correctAnswer
-                          ? 'bg-green-500 text-white' // ✅ Correct answer is green
-                          : option === selectedOption
-                          ? 'bg-red-500 text-white' // ❌ Wrong answer is red
-                          : 'bg-gray-200'
-                        : 'bg-gray-200 hover:bg-blue-500 hover:text-white'
-                    }`}
-                    onClick={() => handleAnswer(option)}
-                    disabled={selectedOption !== null}
-                  >
-                    {option} {selectedOption && (option === questionData.correctAnswer ? '✅' : option === selectedOption ? '❌' : '')}
-                  </button>
-                ))
-              ) : (
-                <p className="text-red-500">⚠️ Error: Question options are missing!</p>
-              )}
-            </div>
-          )}
+          {/* Question and Options */}
+          <div className="mt-8 p-4 border rounded bg-gray-100 shadow">
+            {questionData ? (
+              <>
+                <p className="text-lg font-semibold">{questionData.question}</p>
+                {questionData?.options && questionData.options.length >= 2 ? (
+                  questionData.options.map((option, index) => (
+                    <button
+                      key={index}
+                      className={`w-full p-3 mt-2 rounded transition ${
+                        selectedOption
+                          ? option === questionData.correctAnswer
+                            ? 'bg-green-500 text-white' // Correct answer is green
+                            : option === selectedOption
+                            ? 'bg-red-500 text-white' // Wrong answer is red
+                            : 'bg-gray-200'
+                          : 'bg-gray-200 hover:bg-blue-500 hover:text-white'
+                      }`}
+                      onClick={() => handleAnswer(option)}
+                      disabled={selectedOption !== null}
+                    >
+                      {option}
+                    </button>
+                  ))
+                ) : (
+                  <p className="text-red-500">⚠️ Error: Question options are missing!</p>
+                )}
+              </>
+            ) : (
+              <p>Loading question...</p>
+            )}
+          </div>
         </>
       ) : (
         <>
@@ -182,8 +208,8 @@ export default function Home() {
                 <button
                   key={topic}
                   className={`p-2 rounded border transition ${
-                    selectedTopics.includes(topic) 
-                      ? 'bg-blue-500 text-white border-blue-700' 
+                    selectedTopics.includes(topic)
+                      ? 'bg-blue-500 text-white border-blue-700'
                       : 'bg-gray-200 border-gray-400'
                   }`}
                   onClick={() => toggleTopic(topic)}
@@ -194,12 +220,12 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Start Game Button (Always Visible) */}
+          {/* Start Game Button */}
           <div className="mt-6">
             <button
               className="w-full p-3 bg-green-500 text-white rounded text-lg font-semibold hover:bg-green-600 transition"
               onClick={startGame}
-              disabled={selectedTopics.length === 0} // Disable if no topics are selected
+              disabled={selectedTopics.length === 0}
             >
               🎮 Start Game
             </button>

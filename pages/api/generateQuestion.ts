@@ -16,22 +16,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
+    const levelDescriptions = {
+      1: 'Basic syntax and easy-to-remember concepts.',
+      2: 'Common real-world coding tasks.',
+      3: 'Intermediate coding tasks that require problem-solving skills.',
+      4: 'Advanced coding tasks, applying core concepts.',
+      5: 'Optimizations, edge cases, and debugging.',
+      6: 'High-level JavaScript and React concepts, optimizations.',
+      7: 'Expert-level questions focused on performance, security, or design patterns.',
+      8: 'Advanced JavaScript and React internals, deep browser APIs.',
+      9: 'Cutting-edge JavaScript/React techniques, extremely challenging questions.',
+      10: 'Mastery-level questions covering browser internals, deep optimization, and best practices.',
+    };
+    
     const prompt = `
     Generate a **NEW** multiple-choice frontend coding question for a Level ${level} developer.
-    Ensure **no repetition** and choose a diverse subtopic from: ${topics.join(', ')}.
+    Choose one of the following topics from the user's selection: ${topics.join(', ')}.
     
-    **Subtopics (Choose One Randomly Per Question)**:
-    - **HTML:** Forms, Accessibility, Meta Tags, Tables, Semantic Elements, Multimedia, ARIA Roles, Web Components, HTML5 APIs, Input Types.
-    - **CSS:** Flexbox, Grid, Animations, Specificity, Pseudo-classes, Units (rem, vh, %), Transitions, Variables, Media Queries, Clipping & Masking.
-    - **JavaScript:** Closures, Promises, Event Delegation, \`this\` keyword, Prototypes, Scope, Async/Await, Modules, ES6 Features, Hoisting.
-    - **React:** Hooks, Context API, Render Optimization, Virtual DOM, Lifecycle Methods, Error Boundaries, Suspense, Server Components, Memoization.
-    
-    **Difficulty Rules Per Level**:
-    - **Level 1-2:** Simple syntax, fundamental concepts (easy recall).
-    - **Level 3-4:** Common real-world coding tasks.
-    - **Level 5-6:** Debugging, problem-solving, applying concepts.
-    - **Level 7-8:** Advanced optimizations, best practices, security considerations.
-    - **Level 9-10:** Expert-level browser internals, performance tuning, deep JavaScript mechanics.
+    **Difficulty Level Description:**
+    - **Level ${level}:** ${levelDescriptions[level]}
     
     **Rules**:
     - The question must be **completely different from: ${previousQuestions.join(', ')}**
@@ -39,18 +42,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     - The format must be **valid JSON**, structured as:
     {
       "question": "What is the default flex-direction in CSS Flexbox?",
-      "options": [
-        "row",
-        "column",
-        "row-reverse",
-        "column-reverse"
-      ],
+      "options": ["row", "column", "row-reverse", "column-reverse"],
       "correctAnswer": "row",
       "explanation": "By default, Flexbox arranges elements in a row."
     }
     
     **Ensure uniqueness, variety, and logical progression of difficulty. No duplicates.**
-    `;     
+    `;       
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
