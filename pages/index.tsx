@@ -55,39 +55,48 @@ export default function Home() {
   }
 
   const startGame = () => {
-    setLevel(0) // ✅ Reset level to 0
-    setCorrectAnswers(0)
-    setTokens(0) // ✅ Reset tokens
-    setQuestionNumber(1)
-    setPreviousQuestions([]) // ✅ Reset past questions
-    setGameActive(true)
-    Cookies.set('level', '0')
-    Cookies.set('tokens', '0')
-    generateQuestion()
-  }  
-
+    setLevel(1);
+    setCorrectAnswers(0);
+    setTokens(0);
+    setQuestionNumber(1);
+    setPreviousQuestions([]);
+    setGameActive(true);
+    Cookies.set('level', '1');
+    Cookies.set('tokens', '0');
+    generateQuestion();
+  };
+  
   const handleAnswer = (selectedOption) => {
-    setSelectedOption(selectedOption)
+    setSelectedOption(selectedOption);
   
     if (selectedOption === questionData.correctAnswer) {
-      alert('✅ Correct!')
+      alert('✅ Correct!');
   
       if (questionNumber === 3) {
-        alert(`🎉 Level ${level} Completed! Moving to Level ${level + 1}`)
-        setLevel(level + 1)
-        setTokens(tokens + 1)
-        setQuestionNumber(1)
-        if (level + 1 > highestLevel) setHighestLevel(level + 1)
-        generateQuestion()
+        alert(`🎉 Level ${level} Completed! Moving to Level ${level + 1}`);
+        setLevel(level + 1);
+        setTokens(tokens + 1);
+        setQuestionNumber(1);
+        if (level + 1 > highestLevel) setHighestLevel(level + 1);
+        generateQuestion();
       } else {
-        setQuestionNumber(questionNumber + 1)
-        generateQuestion()
+        setQuestionNumber(questionNumber + 1);
+        generateQuestion();
       }
     } else {
-      alert(`❌ Wrong! The correct answer was: ${questionData.correctAnswer}`)
-      setGameActive(false)
+      alert(`❌ Wrong! The correct answer was: ${questionData.correctAnswer}
+      
+  💡 Explanation: ${questionData.explanation}`);
+  
+      setTimeout(() => {
+        alert("🔄 Try Again! Restarting this level.");
+        setQuestionNumber(1);
+        setSelectedOption(null);
+        generateQuestion();
+      }, 1000);
     }
-  }
+  };
+  
   
   const useTokenToRemoveWrongAnswer = () => {
     if (tokens > 0 && questionData && questionData.options.length > 2) {
@@ -152,9 +161,9 @@ export default function Home() {
                         : 'bg-gray-200 hover:bg-blue-500 hover:text-white'
                     }`}
                     onClick={() => handleAnswer(option)}
-                    disabled={selectedOption !== null} // ✅ Disable buttons after selecting
+                    disabled={selectedOption !== null}
                   >
-                    {option}
+                    {option} {selectedOption && (option === questionData.correctAnswer ? '✅' : option === selectedOption ? '❌' : '')}
                   </button>
                 ))
               ) : (
