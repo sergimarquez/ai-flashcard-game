@@ -1,0 +1,51 @@
+{
+    "HTML": [
+      {
+        "question": "What does the <meta> tag do in HTML?",
+        "answer": "It provides metadata about the HTML document.",
+        "funFact": "The <meta> tag can define a webpage's character encoding, viewport settings, and SEO keywords."
+      },
+      {
+        "question": "What is the difference between <div> and <span> in HTML?",
+        "answer": "<div> is a block-level element, while <span> is an inline element.",
+        "funFact": "<div> structures content, while <span> styles inline text."
+      }
+    ],
+    "CSS": [
+      {
+        "question": "What is the purpose of the 'z-index' property in CSS?",
+        "answer": "It controls the stack order of overlapping elements.",
+        "funFact": "Higher z-index values appear in front of lower values."
+      },
+      {
+        "question": "What does 'position: absolute' do in CSS?",
+        "answer": "It positions an element relative to its nearest positioned ancestor.",
+        "funFact": "If no ancestor is positioned, it defaults to the viewport."
+      }
+    ],
+    "JavaScript": [
+      {
+        "question": "What is the difference between 'var', 'let', and 'const' in JavaScript?",
+        "answer": "'var' is function-scoped, while 'let' and 'const' are block-scoped.",
+        "funFact": "Using 'const' prevents accidental reassignment."
+      },
+      {
+        "question": "What is an arrow function in JavaScript?",
+        "answer": "A shorter function syntax using `=>`.",
+        "funFact": "Arrow functions do not have their own `this` context."
+      }
+    ],
+    "React": [
+      {
+        "question": "What is JSX in React?",
+        "answer": "JSX is a syntax extension that looks like HTML inside JavaScript.",
+        "funFact": "JSX is compiled to `React.createElement` calls behind the scenes."
+      },
+      {
+        "question": "What are React hooks?",
+        "answer": "Functions that let you use state and lifecycle methods inside functional components.",
+        "funFact": "`useState` and `useEffect` are the most commonly used hooks."
+      }
+    ]
+  }
+  
