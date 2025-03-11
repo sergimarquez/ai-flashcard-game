@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import Cookies from 'js-cookie'
 import { FaGithub } from 'react-icons/fa'
 
-// Modal component - fixed centering
 const Modal = ({ message, onClose }) => (
   <div className="fixed inset-0 flex justify-center items-center bg-gray-800 bg-opacity-70 z-50">
     <div className="bg-gray-900 p-6 rounded-lg shadow-lg max-w-md w-full">
@@ -16,6 +15,29 @@ const Modal = ({ message, onClose }) => (
   </div>
 );
 
+const fakeData = [
+  {
+    question: "What is the correct way to define a function in JavaScript?",
+    options: ["function myFunc()", "function = myFunc()", "myFunc() = function"],
+    correctAnswer: "function myFunc()",
+    explanation: "In JavaScript, the correct way to define a function is using the 'function' keyword followed by the function name."
+  },
+  {
+    question: "Which of these is a JavaScript framework?",
+    options: ["React", "Vue", "Angular", "All of the above"],
+    correctAnswer: "All of the above",
+    explanation: "React, Vue, and Angular are all popular JavaScript frameworks."
+  },
+  {
+    question: "What does CSS stand for?",
+    options: ["Creative Style Sheets", "Cascading Style Sheets", "Colorful Style Sheets"],
+    correctAnswer: "Cascading Style Sheets",
+    explanation: "CSS stands for Cascading Style Sheets, which is used for styling HTML elements."
+  },
+];
+
+
+
 export default function Home() {
   const [selectedTopics, setSelectedTopics] = useState<string[]>(['HTML'])
   const [questionData, setQuestionData] = useState(null)
@@ -27,15 +49,16 @@ export default function Home() {
   const [gameActive, setGameActive] = useState(false)
   const [selectedOption, setSelectedOption] = useState(null)
   const [previousQuestions, setPreviousQuestions] = useState<string[]>([])
-  const [tokens, setTokens] = useState(Number(Cookies.get('tokens')) || 0)
   const [lives, setLives] = useState(1); // Start with 1 life
   const [modalMessage, setModalMessage] = useState(null); // State for modal message
+  const [showNextButton, setShowNextButton] = useState(false); // State for Next Question button visibility
+  const [showRestartButton, setShowRestartButton] = useState(false); // State for Restart Game button visibility
+  const [feedbackMessage, setFeedbackMessage] = useState(null); // For feedback on the answers
 
   useEffect(() => {
     Cookies.set('level', String(level))
     Cookies.set('highestLevel', String(highestLevel))
-    Cookies.set('tokens', String(tokens))
-  }, [level, highestLevel, tokens])
+  }, [level, highestLevel])
 
   const allTopics = ['HTML', 'CSS', 'JavaScript', 'React']
 
@@ -45,108 +68,127 @@ export default function Home() {
     )
   }
 
-  const generateQuestion = async () => {
-    setLoading(true)
-    setQuestionData(null)
-    setSelectedOption(null) // ✅ Reset selected option
+  // const generateQuestion = async () => {
+  //   setLoading(true)
+  //   setQuestionData(null)
+  //   setSelectedOption(null) // ✅ Reset selected option
 
-    try {
-      const response = await fetch('/api/generateQuestion', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ topics: selectedTopics, level, previousQuestions }),
-      })
+  //   try {
+  //     const response = await fetch('/api/generateQuestion', {
+  //       method: 'POST',
+  //       headers: { 'Content-Type': 'application/json' },
+  //       body: JSON.stringify({ topics: selectedTopics, level, previousQuestions }),
+  //     })
 
-      const data = await response.json()
-      if (data.error) throw new Error(data.error)
+  //     const data = await response.json()
+  //     if (data.error) throw new Error(data.error)
 
-      setQuestionData(data)
-      setPreviousQuestions(prev => [...prev, data.question]) // Store past questions
-    } catch (error) {
-      alert(`Error: ${error.message}`)
-    }
+  //     setQuestionData(data)
+  //     setPreviousQuestions(prev => [...prev, data.question]) // Store past questions
+  //   } catch (error) {
+  //     alert(`Error: ${error.message}`)
+  //   }
 
-    setLoading(false)
-  }
+  //   setLoading(false)
+  // }
+
+  const generateQuestion = () => {
+    setLoading(true);
+    setQuestionData(null);
+    setSelectedOption(null); // ✅ Reset selected option
+  
+    // Simulate API delay
+    setTimeout(() => {
+      const randomIndex = Math.floor(Math.random() * fakeData.length);
+      const randomQuestion = fakeData[randomIndex];
+      setQuestionData(randomQuestion); // Set question data
+      setPreviousQuestions((prev) => [...prev, randomQuestion.question]); // Store past questions
+      setLoading(false); // Stop loading spinner
+    }, 500); // Simulate network delay
+  };
+  
 
   const startGame = () => {
     setLevel(1); // Start at level 1
     setCorrectAnswers(0);
-    setTokens(0);
     setQuestionNumber(1);
     setLives(1); // Start with 1 life
     setPreviousQuestions([]);
     setGameActive(true);
-    Cookies.set('level', '1');
-    Cookies.set('tokens', '0');
-    Cookies.set('lives', '1');
+    setShowRestartButton(false); // Hide Restart button on game start
     generateQuestion();
   };
 
   const handleAnswer = (selectedOption) => {
     setSelectedOption(selectedOption);
-
+  
     if (selectedOption === questionData.correctAnswer) {
-      alert('✅ Correct!');
-
+      // Correct answer logic
+      let message = '✅ Correct!';
+  
       if (questionNumber === 3) {
-        alert(`🎉 Level ${level} Completed! Moving to Level ${level + 1}`);
+        // End of level: advance to next level and reset question counter
+        message = `🎉 Level ${level} Completed! Moving to Level ${level + 1}`;
         setLevel(level + 1);
-        setTokens(tokens + 1);
         setQuestionNumber(1);
+  
 
-        // Grant an extra life every 3 levels completed
-        if (level % 3 === 0) {
-          setLives(lives + 1);
-          alert('🎉 You earned an extra life!');
+          setLives((prevLives) => prevLives + 1);
+          message += ' 🎉 You earned an extra life!';
+
+  
+        if (level + 1 > highestLevel) {
+          setHighestLevel(level + 1);
         }
-
-        if (level + 1 > highestLevel) setHighestLevel(level + 1);
-        generateQuestion();
       } else {
         setQuestionNumber(questionNumber + 1);
-        generateQuestion();
       }
+  
+      setFeedbackMessage(message);
+      setShowNextButton(true);
     } else {
-      alert(`❌ Wrong! The correct answer was: ${questionData.correctAnswer}`);
-      
-      // If player still has lives left, allow them to continue
-      if (lives > 0) {
-        alert(`You have ${lives} lives left. Try again!`);
-        setLives(lives - 1); // Deduct one life
-        setSelectedOption(null); // Reset selected option
-        setQuestionNumber(1); // Restart current level
-        generateQuestion(); // Generate a new question
+      // Wrong answer logic
+      let message = `❌ Wrong! The correct answer was: ${questionData.correctAnswer}.`;
+      message += ` Explanation: ${questionData.explanation || 'No explanation available'}`;
+  
+      if (lives > 1) {
+        // Deduct a life if more than 1 is available
+        setLives(lives - 1);
+        message += ' You lost a life.';
+        setFeedbackMessage(message);
+        setShowNextButton(true);
       } else {
-        alert("❌ No lives left! Restarting the game.");
-        setGameActive(false);
-        setLevel(0); // Reset to level 0 on failure
+        // Game over when no lives remain
+        setLives(0);
+        message += ' No lives left! Game Over.';
+        setFeedbackMessage(message);
+        setShowRestartButton(true);
       }
     }
-  };
-
-  const useTokenToRemoveWrongAnswer = () => {
-    if (tokens > 0 && questionData && questionData.options.length > 2) {
-      const wrongAnswers = questionData.options.filter(option => option !== questionData.correctAnswer);
-
-      if (wrongAnswers.length > 0) {
-        const answerToRemove = wrongAnswers[Math.floor(Math.random() * wrongAnswers.length)];
-
-        // ✅ Correctly update the state to remove the selected wrong answer
-        setQuestionData(prevData => {
-          if (!prevData) return null; // Prevent errors if questionData is null
-          return {
-            ...prevData,
-            options: prevData.options.filter(option => option !== answerToRemove),
-          };
-        });
-
-        setTokens(prevTokens => prevTokens - 1); // ✅ Deduct one token
-      }
-    } else {
-      alert("❌ No tokens left or can't remove more answers!");
+  };  
+  
+  
+  const nextQuestion = () => {
+    // If player still has lives left, continue the game
+    if (lives > 0) {
+      setShowNextButton(false); // Hide the next question button
+      setFeedbackMessage(null); // Clear feedback message
+      generateQuestion(); // Load the next question
     }
   };
+  
+  const restartGame = () => {
+    setLevel(1); // Reset to level 1
+    setCorrectAnswers(0);
+    setQuestionNumber(1);
+    setLives(1); // Start with 1 life
+    setPreviousQuestions([]);
+    setGameActive(true);
+    setShowRestartButton(false); // Hide restart button
+    setFeedbackMessage(null); // Clear feedback message
+    generateQuestion(); // Start new game
+  };
+  
 
   return (
     <div className="p-10 bg-gray-900 text-gray-100 min-h-screen flex flex-col justify-center items-center">
@@ -171,24 +213,13 @@ export default function Home() {
             <div className="bg-blue-800 p-3 rounded-md text-center w-full">
               <p className="text-lg text-yellow-300">Level: {level}</p>
               <p className="text-lg text-yellow-300">Lives: {lives} ❤️</p>
-              <p className="text-lg text-yellow-300">Tokens: {tokens} 🎟️</p>
             </div>
           </div>
 
-          <p className="text-center mb-4 text-gray-300 text-white">Question {questionNumber}/3</p>
+          <p className="text-center mb-4 text-gray-300">Question {questionNumber}/3</p>
 
-          <div className="mt-4 w-full bg-gray-600 rounded-lg h-2">
+          <div className="mt-4 w-full bg-gray-600 rounded-lg h-2 max-w-lg">
             <div className="bg-blue-500 h-full" style={{ width: `${(questionNumber / 3) * 100}%` }} />
-          </div>
-
-          {/* Quit Button (small, at the bottom) */}
-          <div className="mt-6 text-center">
-            <a
-              onClick={() => setGameActive(false)}
-              className="text-gray-400 hover:text-white text-sm cursor-pointer"
-            >
-              Quit Game
-            </a>
           </div>
 
           {/* Question and Options */}
@@ -200,12 +231,12 @@ export default function Home() {
                   questionData.options.map((option, index) => (
                     <button
                       key={index}
-                      className={`w-full p-3 mt-2 rounded transition ${
+                      className={`w-full p-3 mt-2 text-black rounded transition ${
                         selectedOption
                           ? option === questionData.correctAnswer
-                            ? 'bg-green-500 text-white' // Correct answer is green
+                            ? 'bg-green-500 text-white'
                             : option === selectedOption
-                            ? 'bg-red-500 text-white' // Wrong answer is red
+                            ? 'bg-red-500 text-white'
                             : 'bg-gray-200'
                           : 'bg-gray-200 hover:bg-blue-500 hover:text-white'
                       }`}
@@ -224,6 +255,34 @@ export default function Home() {
                 <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500"></div>
               </div>
             )}
+
+            {/* Feedback message */}
+            {feedbackMessage && (
+              <div className="mt-4 text-center text-lg font-semibold text-gray-800">
+                <p>{feedbackMessage}</p>
+                {showNextButton && (
+                  <button 
+                    className="mt-4 p-3 bg-blue-500 text-white rounded"
+                    onClick={nextQuestion}
+                  >
+                    Next Question
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* Restart Game Button */}
+            {showRestartButton && (
+              <div className="mt-4 text-center">
+                <button 
+                  className="p-3 bg-green-500 text-white rounded"
+                  onClick={restartGame}
+                >
+                  Restart Game
+                </button>
+              </div>
+            )}
+
           </div>
         </>
       ) : (
@@ -238,7 +297,7 @@ export default function Home() {
                   className={`p-2 rounded border transition ${
                     selectedTopics.includes(topic)
                       ? 'bg-blue-500 text-white border-blue-700'
-                      : 'bg-gray-200 border-gray-400'
+                      : 'bg-gray-200 text-black border-gray-400'
                   }`}
                   onClick={() => toggleTopic(topic)}
                 >
