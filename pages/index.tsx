@@ -198,7 +198,7 @@ const generateQuestion = async () => {
         <div className="mb-6 text-center text-gray-300">
           <h2 className="text-2xl font-semibold text-white">How to Play</h2>
           <p className="text-white">Select your topics and start the game. Answer coding questions to level up!</p>
-          <p className="mt-2 text-white">Earn a **token** after completing each level and an **extra life** every 3 levels.</p>
+          <p className="mt-2 text-white">Earn an extra life every 3 questions.</p>
           <p className="mt-4 text-lg font-semibold text-white">Good luck and have fun! 🎮</p>
         </div>
       )}
@@ -318,7 +318,7 @@ const generateQuestion = async () => {
 
       {/* Footer */}
       <footer className="absolute bottom-0 w-full py-4 bg-gray-800 text-white text-center">
-        <p>Created by <a href="https://sergimarquez.com" className="text-blue-400">SergiMarquez</a> | <a href="https://github.com/sergimarquez" target="_blank" rel="noopener noreferrer"><FaGithub className="inline text-lg" /></a></p>
+        <p>Created by <a href="https://sergimarquez.com" target="_blank" className="text-blue-400">SergiMarquez</a> | <a href="https://github.com/sergimarquez/ai-flashcard-game" target="_blank" rel="noopener noreferrer"><FaGithub className="inline text-lg" /></a> | v.1.0 </p>
       </footer>
     </div>
   )
