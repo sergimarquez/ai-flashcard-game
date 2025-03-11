@@ -68,54 +68,56 @@ export default function Home() {
     )
   }
 
-  // const generateQuestion = async () => {
-  //   setLoading(true)
-  //   setQuestionData(null)
-  //   setSelectedOption(null) // ✅ Reset selected option
+// Original generateQuestion function
+const generateQuestion = async () => {
+  setLoading(true);
+  setQuestionData(null);
+  setSelectedOption(null); // ✅ Reset selected option
 
-  //   try {
-  //     const response = await fetch('/api/generateQuestion', {
-  //       method: 'POST',
-  //       headers: { 'Content-Type': 'application/json' },
-  //       body: JSON.stringify({ topics: selectedTopics, level, previousQuestions }),
-  //     })
+  try {
+    const response = await fetch('/api/generateQuestion', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ topics: selectedTopics, level, previousQuestions }),
+    });
 
-  //     const data = await response.json()
-  //     if (data.error) throw new Error(data.error)
+    const data = await response.json();
+    if (data.error) throw new Error(data.error);
 
-  //     setQuestionData(data)
-  //     setPreviousQuestions(prev => [...prev, data.question]) // Store past questions
-  //   } catch (error) {
-  //     alert(`Error: ${error.message}`)
-  //   }
+    setQuestionData(data);
+    setPreviousQuestions((prev) => [...prev, data.question]); // Store past questions
+  } catch (error) {
+    alert(`Error: ${error.message}`);
+  }
 
-  //   setLoading(false)
-  // }
+  setLoading(false);
+};
 
-  const generateQuestion = () => {
-    setLoading(true);
-    setQuestionData(null);
-    setSelectedOption(null); // ✅ Reset selected option
+// Commented-out simulated version of generateQuestion
+// const generateQuestion = () => {
+//   setLoading(true);
+//   setQuestionData(null);
+//   setSelectedOption(null); // ✅ Reset selected option
   
-    // Simulate API delay
-    setTimeout(() => {
-      const randomIndex = Math.floor(Math.random() * fakeData.length);
-      const randomQuestion = fakeData[randomIndex];
-      setQuestionData(randomQuestion); // Set question data
-      setPreviousQuestions((prev) => [...prev, randomQuestion.question]); // Store past questions
-      setLoading(false); // Stop loading spinner
-    }, 500); // Simulate network delay
-  };
-  
+//   // Simulate API delay
+//   setTimeout(() => {
+//     const randomIndex = Math.floor(Math.random() * fakeData.length);
+//     const randomQuestion = fakeData[randomIndex];
+//     setQuestionData(randomQuestion); // Set question data
+//     setPreviousQuestions((prev) => [...prev, randomQuestion.question]); // Store past questions
+//     setLoading(false); // Stop loading spinner
+//   }, 500); // Simulate network delay
+// };
+
 
   const startGame = () => {
-    setLevel(1); // Start at level 1
+    setLevel(1);
     setCorrectAnswers(0);
     setQuestionNumber(1);
-    setLives(1); // Start with 1 life
+    setLives(1); 
     setPreviousQuestions([]);
     setGameActive(true);
-    setShowRestartButton(false); // Hide Restart button on game start
+    setShowRestartButton(false);
     generateQuestion();
   };
 
@@ -123,11 +125,9 @@ export default function Home() {
     setSelectedOption(selectedOption);
   
     if (selectedOption === questionData.correctAnswer) {
-      // Correct answer logic
       let message = '✅ Correct!';
   
       if (questionNumber === 3) {
-        // End of level: advance to next level and reset question counter
         message = `🎉 Level ${level} Completed! Moving to Level ${level + 1}`;
         setLevel(level + 1);
         setQuestionNumber(1);
@@ -147,18 +147,15 @@ export default function Home() {
       setFeedbackMessage(message);
       setShowNextButton(true);
     } else {
-      // Wrong answer logic
-      let message = `❌ Wrong! The correct answer was: ${questionData.correctAnswer}.`;
+      let message = `❌ Wrong!`;
       message += ` Explanation: ${questionData.explanation || 'No explanation available'}`;
   
       if (lives > 1) {
-        // Deduct a life if more than 1 is available
         setLives(lives - 1);
         message += ' You lost a life.';
         setFeedbackMessage(message);
         setShowNextButton(true);
       } else {
-        // Game over when no lives remain
         setLives(0);
         message += ' No lives left! Game Over.';
         setFeedbackMessage(message);
@@ -169,24 +166,23 @@ export default function Home() {
   
   
   const nextQuestion = () => {
-    // If player still has lives left, continue the game
     if (lives > 0) {
-      setShowNextButton(false); // Hide the next question button
-      setFeedbackMessage(null); // Clear feedback message
-      generateQuestion(); // Load the next question
+      setShowNextButton(false);
+      setFeedbackMessage(null);
+      generateQuestion();
     }
   };
   
   const restartGame = () => {
-    setLevel(1); // Reset to level 1
+    setLevel(1);
     setCorrectAnswers(0);
     setQuestionNumber(1);
-    setLives(1); // Start with 1 life
+    setLives(1);
     setPreviousQuestions([]);
     setGameActive(true);
-    setShowRestartButton(false); // Hide restart button
-    setFeedbackMessage(null); // Clear feedback message
-    generateQuestion(); // Start new game
+    setShowRestartButton(false);
+    setFeedbackMessage(null);
+    generateQuestion();
   };
   
 
