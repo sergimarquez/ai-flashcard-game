@@ -2,19 +2,6 @@ import { useState, useEffect } from 'react'
 import Cookies from 'js-cookie'
 import { FaGithub } from 'react-icons/fa'
 
-const Modal = ({ message, onClose }) => (
-  <div className="fixed inset-0 flex justify-center items-center bg-gray-800 bg-opacity-70 z-50">
-    <div className="bg-gray-900 p-6 rounded-lg shadow-lg max-w-md w-full">
-      <p className="text-lg font-semibold text-yellow-300">{message}</p>
-      <div className="mt-4 flex justify-end">
-        <button onClick={onClose} className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
-          Close
-        </button>
-      </div>
-    </div>
-  </div>
-);
-
 const fakeData = [
   {
     question: "What is the correct way to define a function in JavaScript?",
@@ -50,7 +37,6 @@ export default function Home() {
   const [selectedOption, setSelectedOption] = useState(null)
   const [previousQuestions, setPreviousQuestions] = useState<string[]>([])
   const [lives, setLives] = useState(1); // Start with 1 life
-  const [modalMessage, setModalMessage] = useState(null); // State for modal message
   const [showNextButton, setShowNextButton] = useState(false); // State for Next Question button visibility
   const [showRestartButton, setShowRestartButton] = useState(false); // State for Restart Game button visibility
   const [feedbackMessage, setFeedbackMessage] = useState(null); // For feedback on the answers
@@ -69,45 +55,45 @@ export default function Home() {
   }
 
 // Original generateQuestion function
-const generateQuestion = async () => {
-  setLoading(true);
-  setQuestionData(null);
-  setSelectedOption(null); // ✅ Reset selected option
-
-  try {
-    const response = await fetch('/api/generateQuestion', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ topics: selectedTopics, level, previousQuestions }),
-    });
-
-    const data = await response.json();
-    if (data.error) throw new Error(data.error);
-
-    setQuestionData(data);
-    setPreviousQuestions((prev) => [...prev, data.question]); // Store past questions
-  } catch (error) {
-    alert(`Error: ${error.message}`);
-  }
-
-  setLoading(false);
-};
-
-// Commented-out simulated version of generateQuestion
-// const generateQuestion = () => {
+// const generateQuestion = async () => {
 //   setLoading(true);
 //   setQuestionData(null);
 //   setSelectedOption(null); // ✅ Reset selected option
-  
-//   // Simulate API delay
-//   setTimeout(() => {
-//     const randomIndex = Math.floor(Math.random() * fakeData.length);
-//     const randomQuestion = fakeData[randomIndex];
-//     setQuestionData(randomQuestion); // Set question data
-//     setPreviousQuestions((prev) => [...prev, randomQuestion.question]); // Store past questions
-//     setLoading(false); // Stop loading spinner
-//   }, 500); // Simulate network delay
+
+//   try {
+//     const response = await fetch('/api/generateQuestion', {
+//       method: 'POST',
+//       headers: { 'Content-Type': 'application/json' },
+//       body: JSON.stringify({ topics: selectedTopics, level, previousQuestions }),
+//     });
+
+//     const data = await response.json();
+//     if (data.error) throw new Error(data.error);
+
+//     setQuestionData(data);
+//     setPreviousQuestions((prev) => [...prev, data.question]); // Store past questions
+//   } catch (error) {
+//     alert(`Error: ${error.message}`);
+//   }
+
+//   setLoading(false);
 // };
+
+// Commented-out simulated version of generateQuestion
+const generateQuestion = () => {
+   setLoading(true);
+   setQuestionData(null);
+ setSelectedOption(null); // ✅ Reset selected option
+  
+  // Simulate API delay
+ setTimeout(() => {
+    const randomIndex = Math.floor(Math.random() * fakeData.length);
+    const randomQuestion = fakeData[randomIndex];
+    setQuestionData(randomQuestion); // Set question data
+  setPreviousQuestions((prev) => [...prev, randomQuestion.question]); // Store past questions
+   setLoading(false); // Stop loading spinner
+  }, 500); // Simulate network delay
+ };
 
 
   const startGame = () => {
@@ -187,54 +173,61 @@ const generateQuestion = async () => {
   
 
   return (
-    <div className="p-10 bg-gray-900 text-gray-100 min-h-screen flex flex-col justify-center items-center">
-      <h1 className="text-4xl font-bold mb-6 text-center text-yellow-400">⚔️ CodeQuest: Frontend Challenges 🏆</h1>
-
-      {/* Modal */}
-      {modalMessage && <Modal message={modalMessage} onClose={() => setModalMessage(null)} />}
-
+    <div className="p-10 bg-black text-green-400 min-h-screen flex flex-col justify-center items-center retro-container">
+      <h1 className="text-4xl font-bold mb-6 text-center text-white  pixel-font">
+        🕹️ CodeQuest: Frontend Challenges 🎮
+      </h1>
+  
       {/* Instructions */}
       {!gameActive && (
-        <div className="mb-6 text-center text-gray-300">
-          <h2 className="text-2xl font-semibold text-white">How to Play</h2>
-          <p className="text-white">Select your topics and start the game. Answer coding questions to level up!</p>
-          <p className="mt-2 text-white">Earn an extra life every 3 questions.</p>
-          <p className="mt-4 text-lg font-semibold text-white">Good luck and have fun! 🎮</p>
+        <div className="mb-6 text-center text-white pixel-font">
+          <h2 className="text-2xl ">How to Play</h2>
+          <p>Select your topics and start the game. Answer coding questions to level up!</p>
+          <p className="mt-2">Earn an extra life every 3 questions.</p>
+          <p className="mt-4 text-lg ">Good luck and have fun! 🎮</p>
         </div>
       )}
-
+  
       {gameActive ? (
         <>
-          <div className="mb-6 flex justify-between items-center w-full max-w-lg">
-            <div className="bg-blue-800 p-3 rounded-md text-center w-full">
-              <p className="text-lg text-yellow-300">Level: {level}</p>
-              <p className="text-lg text-yellow-300">Lives: {lives} ❤️</p>
+          <div className="mb-6 flex justify-between items-center w-full max-w-lg glow">
+            <div className="bg-green-800 p-3 rounded-md text-center w-full border-4 border-green-400">
+              <p className="text-lg text-white pixel-font">Level: {level}</p>
+              <p className="text-lg text-white pixel-font">Lives: {lives} ❤️</p>
             </div>
           </div>
-
-          <p className="text-center mb-4 text-gray-300">Question {questionNumber}/3</p>
-
-          <div className="mt-4 w-full bg-gray-600 rounded-lg h-2 max-w-lg">
-            <div className="bg-blue-500 h-full" style={{ width: `${(questionNumber / 3) * 100}%` }} />
+  
+          <p className="text-center mb-4 text-green-300 pixel-font">
+            Question {questionNumber}/3
+          </p>
+  
+          {/* Retro Progress Bar */}
+          <div className="mt-4 w-full bg-gray-600 rounded-lg h-2 max-w-lg border-2 border-green-400 glow">
+            <div
+              className="bg-green-500 h-full"
+              style={{ width: `${(questionNumber / 3) * 100}%` }}
+            />
           </div>
-
+  
           {/* Question and Options */}
-          <div className="mt-8 p-6 border rounded bg-white shadow-md w-full max-w-lg">
+          <div className="mt-8 p-6 border-4 border-green-400 rounded bg-gray-800 shadow-md w-full max-w-lg">
             {questionData ? (
               <>
-                <p className="text-lg font-semibold text-gray-800">{questionData.question}</p>
+                <p className="text-lg font-bold text-center text-white pixel-font">
+                  {questionData.question}
+                </p>
                 {questionData?.options && questionData.options.length >= 2 ? (
                   questionData.options.map((option, index) => (
                     <button
                       key={index}
-                      className={`w-full p-3 mt-2 text-black rounded transition ${
+                      className={`w-full p-3 mt-2 rounded shadow-md pixel-button ${
                         selectedOption
                           ? option === questionData.correctAnswer
-                            ? 'bg-green-500 text-white'
+                            ? 'bg-green-500'
                             : option === selectedOption
-                            ? 'bg-red-500 text-white'
+                            ? 'bg-red-500'
                             : 'bg-gray-200'
-                          : 'bg-gray-200 hover:bg-blue-500 hover:text-white'
+                          : 'hover:bg-blue-70 bg-yellow-300'
                       }`}
                       onClick={() => handleAnswer(option)}
                       disabled={selectedOption !== null}
@@ -243,7 +236,9 @@ const generateQuestion = async () => {
                     </button>
                   ))
                 ) : (
-                  <p className="text-red-500">⚠️ Error: Question options are missing!</p>
+                  <p className="text-red-500 pixel-font">
+                    ⚠️ Error: Question options are missing!
+                  </p>
                 )}
               </>
             ) : (
@@ -251,16 +246,13 @@ const generateQuestion = async () => {
                 <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500"></div>
               </div>
             )}
-
+  
             {/* Feedback message */}
             {feedbackMessage && (
-              <div className="mt-4 text-center text-lg font-semibold text-gray-800">
+              <div className="mt-4 text-center text-lg font-semibold text-green-300 pixel-font">
                 <p>{feedbackMessage}</p>
                 {showNextButton && (
-                  <button 
-                    className="mt-4 p-3 bg-blue-500 text-white rounded"
-                    onClick={nextQuestion}
-                  >
+                  <button className="mt-4 p-3 bg-blue-500 text-white rounded pixel-button" onClick={nextQuestion}>
                     Next Question
                   </button>
                 )}
@@ -285,12 +277,12 @@ const generateQuestion = async () => {
         <>
           {/* Topic Selection UI */}
           <div className="mt-4 text-center">
-            <p className="font-semibold text-gray-800 text-white">Select Topics:</p>
+            <p className="font-semibold text-white pixel-font">Select Topics:</p>
             <div className="flex flex-wrap gap-2 justify-center">
               {allTopics.map(topic => (
                 <button
                   key={topic}
-                  className={`p-2 rounded border transition ${
+                  className={`p-2 rounded border-2 pixel-button ${
                     selectedTopics.includes(topic)
                       ? 'bg-blue-500 text-white border-blue-700'
                       : 'bg-gray-200 text-black border-gray-400'
@@ -302,11 +294,11 @@ const generateQuestion = async () => {
               ))}
             </div>
           </div>
-
+  
           {/* Start Game Button */}
           <div className="mt-6">
             <button
-              className="w-full p-3 bg-green-500 text-white rounded text-lg font-semibold hover:bg-green-600 transition"
+              className="w-full p-3 bg-green-500 text-white rounded text-lg font-semibold hover:bg-green-600 transition pixel-button"
               onClick={startGame}
               disabled={selectedTopics.length === 0}
             >
@@ -315,11 +307,16 @@ const generateQuestion = async () => {
           </div>
         </>
       )}
-
+  
       {/* Footer */}
-      <footer className="absolute bottom-0 w-full py-4 bg-gray-800 text-white text-center">
-        <p>Created by <a href="https://sergimarquez.com" target="_blank" className="text-blue-400">SergiMarquez</a> | <a href="https://github.com/sergimarquez/ai-flashcard-game" target="_blank" rel="noopener noreferrer"><FaGithub className="inline text-lg" /></a> | v.1.0 </p>
+      <footer className="absolute bottom-0 w-full py-4 bg-gray-800 text-white text-center pixel-font">
+        <p>
+          Created by <a href="https://sergimarquez.com" target="_blank" className="text-blue-400">SergiMarquez</a> |
+          <a href="https://github.com/sergimarquez/ai-flashcard-game" target="_blank" rel="noopener noreferrer">
+            <FaGithub className="inline text-lg" />
+          </a> | v.1.0
+        </p>
       </footer>
     </div>
-  )
+  );  
 }
