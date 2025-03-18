@@ -54,46 +54,44 @@ export default function Home() {
     )
   }
 
-// Original generateQuestion function
-// const generateQuestion = async () => {
-//   setLoading(true);
-//   setQuestionData(null);
-//   setSelectedOption(null); // ✅ Reset selected option
+  const USE_FAKE_DATA = process.env.NEXT_PUBLIC_USE_FAKE_DATA === 'true';
 
-//   try {
-//     const response = await fetch('/api/generateQuestion', {
-//       method: 'POST',
-//       headers: { 'Content-Type': 'application/json' },
-//       body: JSON.stringify({ topics: selectedTopics, level, previousQuestions }),
-//     });
-
-//     const data = await response.json();
-//     if (data.error) throw new Error(data.error);
-
-//     setQuestionData(data);
-//     setPreviousQuestions((prev) => [...prev, data.question]); // Store past questions
-//   } catch (error) {
-//     alert(`Error: ${error.message}`);
-//   }
-
-//   setLoading(false);
-// };
-
-// Commented-out simulated version of generateQuestion
-const generateQuestion = () => {
-   setLoading(true);
-   setQuestionData(null);
- setSelectedOption(null); // ✅ Reset selected option
+  const generateQuestion = async () => {
+    setLoading(true);
+    setQuestionData(null);
+    setSelectedOption(null);
   
-  // Simulate API delay
- setTimeout(() => {
-    const randomIndex = Math.floor(Math.random() * fakeData.length);
-    const randomQuestion = fakeData[randomIndex];
-    setQuestionData(randomQuestion); // Set question data
-  setPreviousQuestions((prev) => [...prev, randomQuestion.question]); // Store past questions
-   setLoading(false); // Stop loading spinner
-  }, 500); // Simulate network delay
- };
+    if (USE_FAKE_DATA) {
+      // Use fake questions for local development
+      setTimeout(() => {
+        const randomIndex = Math.floor(Math.random() * fakeData.length);
+        const randomQuestion = fakeData[randomIndex];
+        setQuestionData(randomQuestion);
+        setPreviousQuestions((prev) => [...prev, randomQuestion.question]);
+        setLoading(false);
+      }, 500);
+    } else {
+      // Fetch real question from API
+      try {
+        const response = await fetch('/api/generateQuestion', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ topics: selectedTopics, level, previousQuestions }),
+        });
+  
+        const data = await response.json();
+        if (data.error) throw new Error(data.error);
+  
+        setQuestionData(data);
+        setPreviousQuestions((prev) => [...prev, data.question]);
+      } catch (error) {
+        alert(`Error: ${error.message}`);
+      }
+  
+      setLoading(false);
+    }
+  };
+  
 
 
   const startGame = () => {
